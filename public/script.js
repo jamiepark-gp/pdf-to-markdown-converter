@@ -201,6 +201,11 @@ class PDFConverter {
             this.pdfEmbed.src = fileURL + '#toolbar=0&navpanes=0&scrollbar=1';
         }
         
+        // Default to side-by-side view when conversion completes
+        this.resultContainer.classList.add('side-by-side');
+        this.toggleViewBtn.textContent = '📝 Text Only View';
+        this.resultText.style.height = '70vh';
+        
         if (result.metadata && this.includeMetadata.checked) {
             this.showMetadata(result.metadata);
         }
