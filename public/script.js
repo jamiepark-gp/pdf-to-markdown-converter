@@ -287,6 +287,10 @@ class PDFConverter {
             this.editBtn.textContent = '💾 Save';
             this.resultText.focus();
             
+            // Set cursor to the beginning of the text
+            this.resultText.setSelectionRange(0, 0);
+            this.resultText.scrollTop = 0;
+            
             // Show table and undo buttons in edit mode
             this.tableBtn.style.display = 'inline-block';
             this.undoBtn.style.display = 'inline-block';
