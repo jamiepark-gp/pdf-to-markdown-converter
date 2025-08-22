@@ -1,0 +1,14 @@
+# Commands to run after creating your GitHub repository
+# Replace 'yourusername' and 'pdf-to-markdown-converter' with your actual values
+
+# 1. Add your GitHub repository as remote origin
+git remote add origin https://github.com/yourusername/pdf-to-markdown-converter.git
+
+# 2. Rename the default branch to main (if needed)
+git branch -M main
+
+# 3. Push your code to GitHub
+git push -u origin main
+
+# After pushing, your repository will be available at:
+# https://github.com/yourusername/pdf-to-markdown-converter

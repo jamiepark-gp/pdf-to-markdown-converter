@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF to Markdown Converter</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>PDF to Markdown Converter</h1>
+            <p>Upload your PDF file and get clean Markdown text instantly</p>
+        </header>
+
+        <main>
+            <div class="upload-section">
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-content">
+                        <svg class="upload-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <polyline points="14,2 14,8 20,8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <line x1="16" y1="13" x2="8" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <line x1="16" y1="17" x2="8" y2="17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <polyline points="10,9 9,9 8,9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <h3>Drop your PDF here</h3>
+                        <p>or <span class="upload-link">browse files</span></p>
+                    </div>
+                    <input type="file" id="fileInput" accept=".pdf" style="display: none;">
+                </div>
+
+                <div class="options">
+                    <label class="option">
+                        <input type="radio" name="outputFormat" value="markdown" checked>
+                        <span>Markdown Format</span>
+                    </label>
+                    <label class="option">
+                        <input type="radio" name="outputFormat" value="text">
+                        <span>Plain Text</span>
+                    </label>
+                    <label class="checkbox-option">
+                        <input type="checkbox" id="includeMetadata" checked>
+                        <span>Include metadata</span>
+                    </label>
+                </div>
+
+                <button id="convertBtn" class="convert-btn" disabled>Convert to Markdown</button>
+            </div>
+
+            <div class="progress-section" id="progressSection" style="display: none;">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <p class="progress-text" id="progressText">Uploading and processing your PDF...</p>
+            </div>
+
+            <div class="result-section" id="resultSection" style="display: none;">
+                <div class="result-header">
+                    <h3>Conversion Complete!</h3>
+                    <div class="result-actions">
+                        <button id="editBtn" class="action-btn">✏️ Edit</button>
+                        <button id="tableBtn" class="action-btn" style="display: none;">📊 To Table</button>
+                        <button id="undoBtn" class="action-btn" style="display: none;">↶ Undo</button>
+                        <button id="copyBtn" class="action-btn">📋 Copy</button>
+                        <button id="downloadBtn" class="action-btn">💾 Download</button>
+                        <button id="toggleViewBtn" class="action-btn">👀 Side-by-Side View</button>
+                    </div>
+                </div>
+                <div class="result-container">
+                    <div class="pdf-preview" id="pdfPreview" style="display: none;">
+                        <h4>📄 Original PDF</h4>
+                        <iframe id="pdfEmbed" type="application/pdf"></iframe>
+                    </div>
+                    <div class="result-content" id="resultContent">
+                        <h4>📝 Converted Text</h4>
+                        <textarea id="resultText" readonly></textarea>
+                    </div>
+                </div>
+                <div class="metadata" id="metadataSection" style="display: none;">
+                    <h4>Document Information</h4>
+                    <div id="metadataContent"></div>
+                </div>
+                <button id="newConversionBtn" class="new-conversion-btn">Convert Another File</button>
+            </div>
+
+            <div class="error-section" id="errorSection" style="display: none;">
+                <div class="error-content">
+                    <h3>❌ Conversion Failed</h3>
+                    <p id="errorMessage"></p>
+                    <button id="retryBtn" class="retry-btn">Try Again</button>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>Powered by <a href="https://upstage.ai" target="_blank">Upstage Document Parse API</a></p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

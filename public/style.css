@@ -1,0 +1,473 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+}
+
+.container {
+    width: 100%;
+    margin: 0;
+    padding: 2rem;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 3rem;
+    color: white;
+}
+
+header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+header p {
+    font-size: 1.1rem;
+    opacity: 0.9;
+}
+
+main {
+    flex: 1;
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    margin: 0 1rem;
+}
+
+.upload-section {
+    text-align: center;
+}
+
+.upload-area {
+    border: 2px dashed #e0e6ed;
+    border-radius: 8px;
+    padding: 0.75rem 0.75rem;
+    margin-bottom: 0.75rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    background: #fafbfc;
+}
+
+.upload-area:hover {
+    border-color: #667eea;
+    background: #f8f9ff;
+    transform: translateY(-2px);
+}
+
+.upload-area.dragover {
+    border-color: #667eea;
+    background: #f0f4ff;
+    transform: scale(1.02);
+}
+
+.upload-content {
+    pointer-events: none;
+}
+
+.upload-icon {
+    width: 32px;
+    height: 32px;
+    color: #9ca3af;
+    margin-bottom: 0.5rem;
+}
+
+.upload-area h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    color: #374151;
+}
+
+.upload-area p {
+    color: #6b7280;
+    margin-bottom: 0.25rem;
+    font-size: 0.875rem;
+}
+
+.upload-link {
+    color: #667eea;
+    font-weight: 500;
+    text-decoration: underline;
+}
+
+.upload-area small {
+    color: #9ca3af;
+    font-size: 0.75rem;
+}
+
+.options {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.option, .checkbox-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.option input[type="radio"],
+.checkbox-option input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #667eea;
+}
+
+.convert-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 1rem 3rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.convert-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.convert-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.progress-section {
+    text-align: center;
+    margin-top: 2rem;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+    width: 0%;
+}
+
+.progress-text {
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.result-section {
+    margin-top: 2rem;
+}
+
+.result-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding: 0.5rem 0;
+}
+
+.result-header h3 {
+    color: #059669;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.result-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.action-btn {
+    background: #f3f4f6;
+    border: 1px solid #d1d5db;
+    padding: 0.25rem 0.75rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    height: auto;
+    line-height: 1.2;
+}
+
+.action-btn:hover {
+    background: #e5e7eb;
+    border-color: #9ca3af;
+}
+
+
+.result-container {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    width: 100%;
+}
+
+.result-container:not(.side-by-side) .result-content {
+    width: 100%;
+    flex: 1;
+}
+
+.result-container.side-by-side .pdf-preview {
+    display: block !important;
+    flex: 1;
+}
+
+.result-container.side-by-side .result-content {
+    flex: 1;
+}
+
+.result-content h4,
+.pdf-preview h4 {
+    margin-bottom: 0.75rem;
+    color: #374151;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.pdf-preview {
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    padding: 1rem;
+    background: #f9fafb;
+    width: 100%;
+    min-width: 0;
+}
+
+.pdf-preview iframe {
+    width: 100%;
+    height: 70vh;
+    border-radius: 6px;
+    border: 1px solid #e5e7eb;
+    display: block;
+}
+
+.result-content {
+    margin-bottom: 1.5rem;
+    width: 100%;
+}
+
+.result-content textarea {
+    width: 100%;
+    height: 70vh;
+    padding: 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    resize: vertical;
+    background: #f9fafb;
+    transition: all 0.2s ease;
+}
+
+.result-content textarea:read-only {
+    background: #f9fafb;
+    color: #6b7280;
+    cursor: default;
+}
+
+.result-content textarea:not(:read-only) {
+    background: #ffffff;
+    color: #374151;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.result-content textarea:not(:read-only):focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+}
+
+/* Side-by-side layout adjustments */
+.result-container.side-by-side .result-content textarea {
+    height: 70vh;
+}
+
+.metadata {
+    background: #f8fafc;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    border: 1px solid #e2e8f0;
+}
+
+.metadata h4 {
+    color: #374151;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+}
+
+.metadata-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.metadata-item:last-child {
+    border-bottom: none;
+}
+
+.metadata-label {
+    font-weight: 500;
+    color: #6b7280;
+}
+
+.metadata-value {
+    color: #374151;
+}
+
+.new-conversion-btn {
+    background: #f3f4f6;
+    color: #374151;
+    border: 1px solid #d1d5db;
+    padding: 0.75rem 2rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.new-conversion-btn:hover {
+    background: #e5e7eb;
+    border-color: #9ca3af;
+}
+
+.error-section {
+    text-align: center;
+    margin-top: 2rem;
+}
+
+.error-content {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    padding: 2rem;
+    border-radius: 8px;
+}
+
+.error-content h3 {
+    color: #dc2626;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.error-content p {
+    color: #7f1d1d;
+    margin-bottom: 1.5rem;
+}
+
+.retry-btn {
+    background: #dc2626;
+    color: white;
+    border: none;
+    padding: 0.75rem 2rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background 0.2s ease;
+}
+
+.retry-btn:hover {
+    background: #b91c1c;
+}
+
+footer {
+    text-align: center;
+    margin-top: 2rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+footer a {
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+}
+
+footer a:hover {
+    text-decoration: underline;
+}
+
+/* File selected state */
+.upload-area.file-selected {
+    border-color: #059669;
+    background: #f0fdf4;
+}
+
+.upload-area.file-selected .upload-icon {
+    color: #059669;
+}
+
+.upload-area.file-selected h3 {
+    color: #059669;
+}
+
+/* Responsive design */
+@media (max-width: 640px) {
+    .container {
+        padding: 1rem;
+    }
+    
+    main {
+        padding: 1.5rem;
+    }
+    
+    header h1 {
+        font-size: 2rem;
+    }
+    
+    .upload-area {
+        padding: 2rem 1rem;
+    }
+    
+    .options {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .result-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .result-actions {
+        align-self: stretch;
+        justify-content: center;
+    }
+}

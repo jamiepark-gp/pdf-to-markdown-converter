@@ -1,0 +1,40 @@
+{
+  "name": "pdf-to-markdown-app",
+  "version": "1.0.0",
+  "description": "An application to convert PDF files to Markdown format using Document Parse API.",
+  "main": "src/app.ts",
+  "scripts": {
+    "start": "node dist/app.js",
+    "dev": "ts-node src/app.ts",
+    "build": "tsc",
+    "postbuild": "cp -r public dist/",
+    "test": "jest"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "multer": "^1.4.5-lts.1",
+    "node-fetch": "^2.7.0",
+    "form-data": "^4.0.0",
+    "dotenv": "^16.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "ts-node": "^10.9.0",
+    "jest": "^29.0.0",
+    "@types/jest": "^29.0.0",
+    "@types/express": "^4.17.21",
+    "@types/multer": "^1.4.11",
+    "@types/node": "^20.0.0",
+    "@types/form-data": "^2.5.0",
+    "@types/node-fetch": "^2.6.4",
+    "@types/dotenv": "^8.2.0"
+  },
+  "keywords": [
+    "pdf",
+    "markdown",
+    "document",
+    "parser"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}
