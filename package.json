@@ -4,7 +4,7 @@
   "description": "An application to convert PDF files to Markdown format using Document Parse API.",
   "main": "src/app.ts",
   "scripts": {
-    "start": "node dist/app.js",
+    "start": "npm run build && node dist/app.js",
     "dev": "ts-node src/app.ts",
     "build": "tsc",
     "postbuild": "cp -r public dist/",
