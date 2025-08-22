@@ -10,7 +10,7 @@ import { PdfProcessingOptions } from './types';
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = parseInt(process.env.PORT || '3000', 10);
 const UPSTAGE_API_KEY = process.env.UPSTAGE_API_KEY;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
@@ -127,13 +127,32 @@ app.post('/convert-to-table', async (req, res) => {
 });
 
 app.get('/health', (req, res) => {
-    res.json({ status: 'OK', timestamp: new Date().toISOString() });
+    try {
+        res.status(200).json({ 
+            status: 'OK', 
+            timestamp: new Date().toISOString(),
+            service: 'PDF to Markdown Converter',
+            version: '1.0.0'
+        });
+    } catch (error) {
+        res.status(500).json({ 
+            status: 'ERROR', 
+            timestamp: new Date().toISOString(),
+            error: 'Health check failed'
+        });
+    }
 });
 
-app.listen(port, () => {
+// Add root route for basic connectivity check
+app.get('/', (req, res) => {
+    res.status(200).send('PDF to Markdown Converter is running!');
+});
+
+app.listen(port, '0.0.0.0', () => {
     console.log(`PDF to Markdown converter running on http://localhost:${port}`);
     console.log(`Web Interface: http://localhost:${port}`);
     console.log('Endpoints:');
     console.log('  POST /convert-pdf - Convert PDF to markdown');
     console.log('  GET  /health - Health check');
+    console.log('  GET  / - Root endpoint');
 });
