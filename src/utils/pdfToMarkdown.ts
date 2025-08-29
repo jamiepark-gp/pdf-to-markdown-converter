@@ -15,23 +15,25 @@ export const convertPdfToMarkdown = async (
         // Handle the actual Upstage API response format
         const responseAny = response as any;
         
-        // Check if response has pages array (page-split format)
-        if (responseAny.pages && Array.isArray(responseAny.pages)) {
-            content = processPageSplitResponse(responseAny, options);
-        } else if (responseAny.content) {
-            // Handle legacy single-document format
+        // Process content and add intelligent page markers
+        if (responseAny.content) {
+            let rawContent = '';
+            
             if (options.outputFormat === 'markdown' && responseAny.content.html) {
                 // Convert HTML to Markdown
-                content = convertHtmlToMarkdown(responseAny.content.html);
+                rawContent = convertHtmlToMarkdown(responseAny.content.html);
             } else if (responseAny.content.text) {
                 // Use plain text
-                content = responseAny.content.text;
+                rawContent = responseAny.content.text;
             } else if (responseAny.content.markdown) {
                 // Use markdown if available
-                content = responseAny.content.markdown;
+                rawContent = responseAny.content.markdown;
             } else {
-                content = 'No content available in the expected format';
+                rawContent = 'No content available in the expected format';
             }
+            
+            // Add intelligent page markers based on content structure
+            content = addIntelligentPageMarkers(rawContent);
         } else {
             // Fallback for unexpected response format
             content = JSON.stringify(response, null, 2);
@@ -43,26 +45,17 @@ export const convertPdfToMarkdown = async (
         };
 
         if (options.includeMetadata) {
-            if (responseAny.pages && Array.isArray(responseAny.pages)) {
-                // Page-split format metadata
-                result.metadata = {
-                    api_version: responseAny.api || 'Unknown',
-                    total_pages: responseAny.pages.length,
-                    pages_processed: responseAny.pages.length,
-                    has_page_splitting: true,
-                    processing_mode: 'page-split'
-                };
-            } else {
-                // Legacy format metadata
-                result.metadata = {
-                    api_version: responseAny.api || 'Unknown',
-                    total_elements: responseAny.elements ? responseAny.elements.length : 0,
-                    has_html: !!responseAny.content?.html,
-                    has_text: !!responseAny.content?.text,
-                    has_markdown: !!responseAny.content?.markdown,
-                    processing_mode: 'single-document'
-                };
-            }
+            const pageMarkers = content.match(/--- PAGE \d+ ---/g) || [];
+            result.metadata = {
+                api_version: responseAny.api || 'Unknown',
+                total_elements: responseAny.elements ? responseAny.elements.length : 0,
+                has_html: !!responseAny.content?.html,
+                has_text: !!responseAny.content?.text,
+                has_markdown: !!responseAny.content?.markdown,
+                processing_mode: 'intelligent-chunking',
+                estimated_pages: pageMarkers.length,
+                has_page_markers: pageMarkers.length > 0
+            };
         }
 
         return result;
@@ -75,44 +68,120 @@ export const convertPdfToMarkdown = async (
     }
 };
 
-// Process page-split response format with page markers
-function processPageSplitResponse(response: any, options: PdfProcessingOptions): string {
-    const pages = response.pages || [];
-    const pageContents: string[] = [];
+// Add intelligent page markers based on content structure
+function addIntelligentPageMarkers(content: string): string {
+    if (!content || !content.trim()) {
+        return content;
+    }
     
-    pages.forEach((page: any, index: number) => {
-        const pageNum = page.page || index + 1;
-        let pageContent = '';
+    // Split content into logical sections for page boundaries
+    const sections: Array<{number: number, content: string}> = [];
+    let pageNumber = 1;
+    
+    // Strategy 1: Look for natural page breaks (form feeds, page separators)
+    let workingContent = content.replace(/\f/g, '\n--- PAGE BREAK ---\n');
+    
+    // Strategy 2: Split by major sections (large gaps in content)
+    const paragraphs = workingContent.split(/\n\s*\n\s*\n/);
+    let currentPage: string[] = [];
+    let currentLength = 0;
+    const maxPageLength = 3000; // Approximate characters per page
+    
+    paragraphs.forEach((paragraph) => {
+        const paragraphLength = paragraph.length;
         
-        // Add page marker
-        pageContents.push(`\n--- PAGE ${pageNum} ---\n`);
-        
-        // Extract content based on format preference
-        if (options.outputFormat === 'markdown') {
-            if (page.markdown) {
-                pageContent = page.markdown;
-            } else if (page.html) {
-                pageContent = convertHtmlToMarkdown(page.html);
-            } else if (page.text) {
-                pageContent = page.text;
+        // Check if this paragraph contains a manual page break
+        if (paragraph.includes('--- PAGE BREAK ---')) {
+            if (currentPage.length > 0) {
+                sections.push({
+                    number: pageNumber++,
+                    content: currentPage.join('\n\n').replace(/--- PAGE BREAK ---/g, '').trim()
+                });
+                currentPage = [];
+                currentLength = 0;
+            }
+            
+            // Add the paragraph content after the break marker
+            const afterBreak = paragraph.replace('--- PAGE BREAK ---', '').trim();
+            if (afterBreak) {
+                currentPage.push(afterBreak);
+                currentLength += afterBreak.length;
+            }
+        }
+        // Strategy 3: Split by content length with intelligent breaks
+        else if (currentLength + paragraphLength > maxPageLength && currentPage.length > 0) {
+            // Look for good breaking points (headings, major sections)
+            const isGoodBreak = paragraph.match(/^#+\s/) || // Markdown heading
+                               paragraph.match(/^[A-Z][A-Z\s]{10,}$/) || // ALL CAPS heading
+                               paragraph.match(/^\d+[\.\)]\s/) || // Numbered section
+                               paragraph.length > 500; // Long paragraph (likely new section)
+            
+            if (isGoodBreak || currentLength > maxPageLength * 1.5) {
+                sections.push({
+                    number: pageNumber++,
+                    content: currentPage.join('\n\n').trim()
+                });
+                currentPage = [paragraph];
+                currentLength = paragraphLength;
+            } else {
+                currentPage.push(paragraph);
+                currentLength += paragraphLength;
             }
         } else {
-            // text format
-            pageContent = page.text || '';
-        }
-        
-        // Add page content if it exists
-        if (pageContent.trim()) {
-            pageContents.push(pageContent.trim());
-        }
-        
-        // Add page separator (except for last page)
-        if (index < pages.length - 1) {
-            pageContents.push('\n');
+            currentPage.push(paragraph);
+            currentLength += paragraphLength;
         }
     });
     
-    return pageContents.join('');
+    // Add remaining content as final page
+    if (currentPage.length > 0) {
+        sections.push({
+            number: pageNumber++,
+            content: currentPage.join('\n\n').trim()
+        });
+    }
+    
+    // If we only have one section and it's very long, force split it
+    if (sections.length === 1 && sections[0].content.length > maxPageLength * 2) {
+        const longContent = sections[0].content;
+        sections.length = 0;
+        
+        const sentences = longContent.split(/(?<=[.!?])\s+/);
+        let currentChunk: string[] = [];
+        let chunkLength = 0;
+        pageNumber = 1;
+        
+        sentences.forEach(sentence => {
+            if (chunkLength + sentence.length > maxPageLength && currentChunk.length > 0) {
+                sections.push({
+                    number: pageNumber++,
+                    content: currentChunk.join(' ').trim()
+                });
+                currentChunk = [sentence];
+                chunkLength = sentence.length;
+            } else {
+                currentChunk.push(sentence);
+                chunkLength += sentence.length;
+            }
+        });
+        
+        if (currentChunk.length > 0) {
+            sections.push({
+                number: pageNumber,
+                content: currentChunk.join(' ').trim()
+            });
+        }
+    }
+    
+    // Format with page markers
+    if (sections.length <= 1) {
+        // Don't add page markers for single-page documents
+        return content;
+    }
+    
+    return sections.map(section => 
+        `--- PAGE ${section.number} ---\n\n${section.content}`
+    ).join('\n\n');
 }
 
 // Simple HTML to Markdown conversion
