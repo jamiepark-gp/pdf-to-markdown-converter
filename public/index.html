@@ -3,15 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PDF to Markdown Converter</title>
+    <title>데이터 전처리 툴</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>PDF to Markdown Converter</h1>
-            <p>Upload your PDF file and get clean Markdown text instantly</p>
+            <h1>데이터 전처리 툴</h1>
+            <p>① pdf 파일을 업로드 해 파일을 마크다운 텍스트로 전환하세요. <br> ②edit 모드에서 제대로 변환하지 못한 텍스트들을 수정/추가해서 원본파일의 의미를 최대한 텍스트화합니다. <br> ③테이블의 경우는 [to table]로 버튼으로 텍스트를 표로 마크다운 변환할 수 있습니다.<br> ④하단의 키워드, 요약버튼을 눌러 키워드와 서머리도 생성후 저장합니다. <br> ⑤ 파일 목록에서 원하는 파일만 선택해 다운로드 할 수 있습니다.  </p>
         </header>
+
+        <!-- Converted Files Archive Section -->
+        <div class="archive-section" id="archiveSection">
+            <div class="archive-header">
+                <h2>📚 Recently Converted Files</h2>
+                <div class="archive-controls">
+                    <button id="bulkSelectBtn" class="control-btn">☑️ Select Files</button>
+                    <button id="refreshArchiveBtn" class="refresh-btn">🔄 Refresh</button>
+                </div>
+            </div>
+            <div id="bulkActions" class="bulk-actions" style="display: none;">
+                <div class="bulk-info">
+                    <span id="selectedCount">0 files selected</span>
+                    <button id="selectAllBtn" class="control-btn">Select All</button>
+                    <button id="clearSelectionBtn" class="control-btn">Clear</button>
+                </div>
+                <div class="bulk-download">
+                    <select id="bulkFormatSelect" class="format-select">
+                        <option value="txt">TXT Format</option>
+                        <option value="json">JSON Format</option>
+                        <option value="csv">CSV/Excel Format</option>
+                    </select>
+                    <button id="bulkDownloadBtn" class="download-btn" disabled>📥 Download Selected</button>
+                </div>
+            </div>
+            <div id="archiveList" class="archive-list">
+                <div class="archive-loading">Loading converted files...</div>
+            </div>
+        </div>
 
         <main>
             <div class="upload-section">
@@ -39,10 +68,6 @@
                         <input type="radio" name="outputFormat" value="text">
                         <span>Plain Text</span>
                     </label>
-                    <label class="checkbox-option">
-                        <input type="checkbox" id="includeMetadata" checked>
-                        <span>Include metadata</span>
-                    </label>
                 </div>
 
                 <button id="convertBtn" class="convert-btn" disabled>Convert to Markdown</button>
@@ -63,7 +88,15 @@
                         <button id="tableBtn" class="action-btn" style="display: none;">📊 To Table</button>
                         <button id="undoBtn" class="action-btn" style="display: none;">↶ Undo</button>
                         <button id="copyBtn" class="action-btn">📋 Copy</button>
-                        <button id="downloadBtn" class="action-btn">💾 Download</button>
+                        <button id="saveToArchiveBtn" class="action-btn">💾 Save to Archive</button>
+                        <div class="download-dropdown">
+                            <button id="downloadBtn" class="action-btn dropdown-trigger">📥 Download ▼</button>
+                            <div id="downloadMenu" class="download-menu" style="display: none;">
+                                <button id="downloadTxt" class="download-option">📄 Download as TXT</button>
+                                <button id="downloadJson" class="download-option">📊 Download as JSON</button>
+                                <button id="downloadExcel" class="download-option">📈 Download as Excel</button>
+                            </div>
+                        </div>
                         <button id="toggleViewBtn" class="action-btn">👀 Side-by-Side View</button>
                     </div>
                 </div>
@@ -73,14 +106,60 @@
                         <iframe id="pdfEmbed" type="application/pdf"></iframe>
                     </div>
                     <div class="result-content" id="resultContent">
-                        <h4>📝 Converted Text</h4>
+                        <div class="text-header">
+                            <h4>📝 Converted Text</h4>
+                            <button id="translateBtn" class="translate-btn" style="display: none;">🌐 Translate to Korean</button>
+                        </div>
                         <textarea id="resultText" readonly></textarea>
                     </div>
+                    <div class="translation-content" id="translationContent" style="display: none;">
+                        <div class="text-header">
+                            <h4>🇰🇷 Korean Translation</h4>
+                            <button id="hideTranslationBtn" class="translate-btn">❌ Hide</button>
+                        </div>
+                        <textarea id="translationText" readonly></textarea>
+                    </div>
                 </div>
-                <div class="metadata" id="metadataSection" style="display: none;">
-                    <h4>Document Information</h4>
-                    <div id="metadataContent"></div>
+                
+                <div class="extract-section" id="extractSection" style="display: none;">
+                    <div class="extract-header">
+                        <h3>📊 Extract Keywords & Summary</h3>
+                        <button id="extractBtn" class="extract-btn">🔍 Extract Keywords & Summary</button>
+                    </div>
+                    
+                    <div class="extract-results" id="extractResults" style="display: none;">
+                        <div class="keywords-section">
+                            <div class="section-header">
+                                <h4>🏷️ Keywords</h4>
+                                <button id="editKeywordsBtn" class="edit-section-btn">✏️ Edit</button>
+                            </div>
+                            <div id="keywordsContent" class="keywords-content"></div>
+                            <div id="keywordsEditContent" class="keywords-edit-content" style="display: none;">
+                                <input type="text" id="keywordsInput" class="keywords-input" placeholder="Enter keywords separated by commas">
+                                <div class="edit-actions">
+                                    <button id="saveKeywordsBtn" class="save-btn">💾 Save</button>
+                                    <button id="cancelKeywordsBtn" class="cancel-btn">❌ Cancel</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="summary-section">
+                            <div class="section-header">
+                                <h4>📝 Summary</h4>
+                                <button id="editSummaryBtn" class="edit-section-btn">✏️ Edit</button>
+                            </div>
+                            <div id="summaryContent" class="summary-content"></div>
+                            <div id="summaryEditContent" class="summary-edit-content" style="display: none;">
+                                <textarea id="summaryInput" class="summary-input" placeholder="Enter summary text"></textarea>
+                                <div class="edit-actions">
+                                    <button id="saveSummaryBtn" class="save-btn">💾 Save</button>
+                                    <button id="cancelSummaryBtn" class="cancel-btn">❌ Cancel</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+                
                 <button id="newConversionBtn" class="new-conversion-btn">Convert Another File</button>
             </div>
 
@@ -94,7 +173,7 @@
         </main>
 
         <footer>
-            <p>Powered by <a href="https://upstage.ai" target="_blank">Upstage Document Parse API</a></p>
+            <p>Powered by <a href="https://upstage.ai" target="_blank">gentlepie</a></p>
         </footer>
     </div>
 
