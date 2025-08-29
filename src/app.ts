@@ -68,13 +68,11 @@ function generateFileId(): string {
 }
 
 if (!UPSTAGE_API_KEY) {
-    console.error('UPSTAGE_API_KEY environment variable is required');
-    process.exit(1);
+    console.warn('WARNING: UPSTAGE_API_KEY environment variable is not set. PDF conversion will not work.');
 }
 
 if (!OPENAI_API_KEY) {
-    console.error('OPENAI_API_KEY environment variable is required');
-    process.exit(1);
+    console.warn('WARNING: OPENAI_API_KEY environment variable is not set. Translation and AI features will not work.');
 }
 
 const storage = multer.diskStorage({
@@ -114,6 +112,13 @@ app.post('/convert-pdf', upload.single('pdf'), async (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({ error: 'No PDF file uploaded' });
+        }
+
+        if (!UPSTAGE_API_KEY) {
+            return res.status(500).json({
+                success: false,
+                error: 'UPSTAGE_API_KEY is not configured. Please contact the administrator.'
+            });
         }
 
         const options: PdfProcessingOptions = {
@@ -185,6 +190,13 @@ app.post('/convert-to-table', async (req, res) => {
             });
         }
 
+        if (!UPSTAGE_API_KEY || !OPENAI_API_KEY) {
+            return res.status(500).json({
+                success: false,
+                error: 'API keys are not configured. Please contact the administrator.'
+            });
+        }
+
         const markdownTable = await convertTextToTableWithLLM(text, UPSTAGE_API_KEY, OPENAI_API_KEY);
         
         res.json({
@@ -215,6 +227,13 @@ app.post('/translate-text', async (req, res) => {
             return res.status(400).json({ 
                 success: false, 
                 error: 'Target language is required' 
+            });
+        }
+
+        if (!OPENAI_API_KEY) {
+            return res.status(500).json({
+                success: false,
+                error: 'OPENAI_API_KEY is not configured. Please contact the administrator.'
             });
         }
 
@@ -274,6 +293,13 @@ app.post('/extract-keywords-summary', async (req, res) => {
             return res.status(400).json({ 
                 success: false, 
                 error: 'Text is required' 
+            });
+        }
+
+        if (!OPENAI_API_KEY) {
+            return res.status(500).json({
+                success: false,
+                error: 'OPENAI_API_KEY is not configured. Please contact the administrator.'
             });
         }
 
