@@ -1014,3 +1014,57 @@ footer a:hover {
         justify-content: center;
     }
 }
+
+/* Page Marker Notification Styles */
+.page-marker-notification {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
+    animation: slideInDown 0.3s ease-out;
+}
+
+.notification-content {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    color: white;
+}
+
+.notification-icon {
+    font-size: 1.2rem;
+    margin-right: 0.75rem;
+}
+
+.notification-text {
+    flex: 1;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.notification-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.notification-close:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+@keyframes slideInDown {
+    from {
+        transform: translateY(-10px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}

@@ -274,6 +274,13 @@ class PDFConverter {
             this.pdfEmbed.src = fileURL + '#toolbar=0&navpanes=0&scrollbar=1';
         }
         
+        // Check if result contains page markers and show indicator
+        const hasPageMarkers = result.content.includes('--- PAGE');
+        if (hasPageMarkers) {
+            const pageCount = (result.content.match(/--- PAGE \d+ ---/g) || []).length;
+            this.showPageMarkerNotification(pageCount);
+        }
+        
         // Default to side-by-side view when conversion completes
         this.resultContainer.classList.add('side-by-side');
         this.toggleViewBtn.textContent = '📝 Text Only View';
@@ -285,6 +292,29 @@ class PDFConverter {
         this.hideAllSections();
         this.errorSection.style.display = 'block';
         this.errorMessage.textContent = message;
+    }
+
+    showPageMarkerNotification(pageCount) {
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = 'page-marker-notification';
+        notification.innerHTML = `
+            <div class="notification-content">
+                <span class="notification-icon">📄</span>
+                <span class="notification-text">Document processed with ${pageCount} page${pageCount > 1 ? 's' : ''} • Page markers added for better chunking</span>
+                <button class="notification-close" onclick="this.parentElement.parentElement.remove()">×</button>
+            </div>
+        `;
+        
+        // Add to result section
+        this.resultSection.insertBefore(notification, this.resultSection.firstChild);
+        
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 5000);
     }
 
     hideAllSections() {

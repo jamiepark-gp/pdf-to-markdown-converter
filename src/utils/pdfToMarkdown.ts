@@ -15,7 +15,11 @@ export const convertPdfToMarkdown = async (
         // Handle the actual Upstage API response format
         const responseAny = response as any;
         
-        if (responseAny.content) {
+        // Check if response has pages array (page-split format)
+        if (responseAny.pages && Array.isArray(responseAny.pages)) {
+            content = processPageSplitResponse(responseAny, options);
+        } else if (responseAny.content) {
+            // Handle legacy single-document format
             if (options.outputFormat === 'markdown' && responseAny.content.html) {
                 // Convert HTML to Markdown
                 content = convertHtmlToMarkdown(responseAny.content.html);
@@ -39,13 +43,26 @@ export const convertPdfToMarkdown = async (
         };
 
         if (options.includeMetadata) {
-            result.metadata = {
-                api_version: responseAny.api || 'Unknown',
-                total_elements: responseAny.elements ? responseAny.elements.length : 0,
-                has_html: !!responseAny.content?.html,
-                has_text: !!responseAny.content?.text,
-                has_markdown: !!responseAny.content?.markdown
-            };
+            if (responseAny.pages && Array.isArray(responseAny.pages)) {
+                // Page-split format metadata
+                result.metadata = {
+                    api_version: responseAny.api || 'Unknown',
+                    total_pages: responseAny.pages.length,
+                    pages_processed: responseAny.pages.length,
+                    has_page_splitting: true,
+                    processing_mode: 'page-split'
+                };
+            } else {
+                // Legacy format metadata
+                result.metadata = {
+                    api_version: responseAny.api || 'Unknown',
+                    total_elements: responseAny.elements ? responseAny.elements.length : 0,
+                    has_html: !!responseAny.content?.html,
+                    has_text: !!responseAny.content?.text,
+                    has_markdown: !!responseAny.content?.markdown,
+                    processing_mode: 'single-document'
+                };
+            }
         }
 
         return result;
@@ -57,6 +74,46 @@ export const convertPdfToMarkdown = async (
         };
     }
 };
+
+// Process page-split response format with page markers
+function processPageSplitResponse(response: any, options: PdfProcessingOptions): string {
+    const pages = response.pages || [];
+    const pageContents: string[] = [];
+    
+    pages.forEach((page: any, index: number) => {
+        const pageNum = page.page || index + 1;
+        let pageContent = '';
+        
+        // Add page marker
+        pageContents.push(`\n--- PAGE ${pageNum} ---\n`);
+        
+        // Extract content based on format preference
+        if (options.outputFormat === 'markdown') {
+            if (page.markdown) {
+                pageContent = page.markdown;
+            } else if (page.html) {
+                pageContent = convertHtmlToMarkdown(page.html);
+            } else if (page.text) {
+                pageContent = page.text;
+            }
+        } else {
+            // text format
+            pageContent = page.text || '';
+        }
+        
+        // Add page content if it exists
+        if (pageContent.trim()) {
+            pageContents.push(pageContent.trim());
+        }
+        
+        // Add page separator (except for last page)
+        if (index < pages.length - 1) {
+            pageContents.push('\n');
+        }
+    });
+    
+    return pageContents.join('');
+}
 
 // Simple HTML to Markdown conversion
 function convertHtmlToMarkdown(html: string): string {

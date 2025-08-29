@@ -17,9 +17,10 @@ export const parseDocumentWithUpstage = async (
 
     const formData = new FormData();
     formData.append('document', fs.createReadStream(filePath));
-    formData.append('output_formats', JSON.stringify(['html', 'text']));
+    formData.append('output_formats', JSON.stringify(['html', 'text', 'markdown']));
     formData.append('ocr', 'auto');
     formData.append('coordinates', 'true');
+    formData.append('split', 'page');
     formData.append('model', 'document-parse');
 
     try {
